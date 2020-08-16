@@ -163,10 +163,7 @@ public class PayoutTests {
                         "\"correspondentIds\": {" +
                         "\"MTN_INIT\": \"ABC123\"," +
                         "\"MTN_FINAL\": \"DEF456\"}," +
-                        "\"status\": \"ACCEPTED\"," +
-                        "\"failureReason\": {"+
-                        "\"failureReason\": \"OTHER_ERROR\","+
-                        "\"failureMessage\": \"Recipient's address is blocked\""+
+                        "\"status\": \"ACCEPTED\"" +
                         "}}"))
         );
     }
@@ -229,10 +226,7 @@ public class PayoutTests {
                                         "\"correspondentIds\": {" +
                                         "\"MTN_INIT\": \"ABC123\"," +
                                         "\"MTN_FINAL\": \"DEF456\"}," +
-                                        "\"status\": \"ACCEPTED\"," +
-                                        "\"failureReason\": {"+
-                                       "\"failureReason\": \"OTHER_ERROR\","+
-                                        "\"failureMessage\": \"Recipient's address is blocked\""+
+                                        "\"status\": \"ACCEPTED\"" +
                                         "}}"))
         );
 

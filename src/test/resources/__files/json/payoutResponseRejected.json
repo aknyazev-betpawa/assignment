@@ -1,4 +1,8 @@
 {
   "created": "2020-02-21T17:32:29Z",
-  "status": "REJECTED"
+  "status": "REJECTED",
+  "rejectionReason": {
+    "rejectionReason": "PAYOUTS_NOT_ALLOWED",
+    "rejectionMessage": "You don't have access to this correspondent"
+  }
 }
