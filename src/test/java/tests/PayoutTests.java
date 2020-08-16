@@ -50,6 +50,8 @@ public class PayoutTests {
             "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 55));
     Payout payout2 = new Payout("2", "1", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
             "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 55));
+    Payout payout3 = new Payout("3", "1", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 55));
 
     static Logger log = Logger.getLogger(PayoutTests.class.getName());
 
@@ -77,7 +79,7 @@ public class PayoutTests {
     }
 
     @Test
-    public void sendRequest_checkRequestResponseBody_expectResponse() {
+    public void sendRequest_checkRequestResponseBody_expectAccepted() {
         String status = given().
                 body(payout2).
                 when().
@@ -87,6 +89,31 @@ public class PayoutTests {
 
         Assert.assertEquals("ACCEPTED", status);
     }
+
+    @Test
+    public void sendRequest_checkRequestResponseBody_expectRejected() {
+        String status = given().
+                body(payout1).
+                when().
+                post("/pawaPayBusiness/v1/payouts").
+                jsonPath().
+                get("status");
+
+        Assert.assertEquals("REJECTED", status);
+    }
+
+    @Test
+    public void sendRequest_checkRequestResponseBody_expectDuplicateIgnored() {
+        String status = given().
+                body(payout3).
+                when().
+                post("/pawaPayBusiness/v1/payouts").
+                jsonPath().
+                get("status");
+
+        Assert.assertEquals("DUPLICATE_IGNORED", status);
+    }
+
 
 
 
@@ -136,10 +163,12 @@ public class PayoutTests {
                         "\"correspondentIds\": {" +
                         "\"MTN_INIT\": \"ABC123\"," +
                         "\"MTN_FINAL\": \"DEF456\"}," +
-                        "\"status\": \"ACCEPTED\"" +
-                        "}"))
+                        "\"status\": \"ACCEPTED\"," +
+                        "\"failureReason\": {"+
+                        "\"failureReason\": \"OTHER_ERROR\","+
+                        "\"failureMessage\": \"Recipient's address is blocked\""+
+                        "}}"))
         );
-
     }
 
 
@@ -200,9 +229,27 @@ public class PayoutTests {
                                         "\"correspondentIds\": {" +
                                         "\"MTN_INIT\": \"ABC123\"," +
                                         "\"MTN_FINAL\": \"DEF456\"}," +
-                                        "\"status\": \"ACCEPTED\"" +
-                                        "}"))
+                                        "\"status\": \"ACCEPTED\"," +
+                                        "\"failureReason\": {"+
+                                       "\"failureReason\": \"OTHER_ERROR\","+
+                                        "\"failureMessage\": \"Recipient's address is blocked\""+
+                                        "}}"))
         );
+
+
+
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '1')]"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutResponseRejected.json"))
+        );
+
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '3')]"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutResponseDuplicateIgnored.json"))
+        );
+
 
 
     }
