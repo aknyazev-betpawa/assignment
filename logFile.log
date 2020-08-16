@@ -1,0 +1,12 @@
+2020-08-16 15:46:13,080  INFO [main] PayoutTests:57 - Target server port: 8090
+2020-08-16 15:46:13,084  INFO [main] PayoutTests:58 - Under test server port: 8080
+2020-08-16 15:46:18,034  INFO [main] Log4jTestWatcher:28 - Success: sendRequest_checkCallbackHeader_expectHeader(tests.PayoutTests)
+2020-08-16 15:46:18,055  INFO [main] PayoutTests:57 - Target server port: 8090
+2020-08-16 15:46:18,055  INFO [main] PayoutTests:58 - Under test server port: 8080
+2020-08-16 15:46:20,109  INFO [main] Log4jTestWatcher:28 - Success: sendRequest_checkCallbackRequestBody_expectRequestBody(tests.PayoutTests)
+2020-08-16 15:46:20,127  INFO [main] PayoutTests:57 - Target server port: 8090
+2020-08-16 15:46:20,128  INFO [main] PayoutTests:58 - Under test server port: 8080
+2020-08-16 15:46:20,860  INFO [main] Log4jTestWatcher:28 - Success: sendRequest_checkRequestResponseBody_expectResponse(tests.PayoutTests)
+2020-08-16 15:46:20,902  INFO [main] PayoutTests:57 - Target server port: 8090
+2020-08-16 15:46:20,903  INFO [main] PayoutTests:58 - Under test server port: 8080
+2020-08-16 15:46:21,000  INFO [main] Log4jTestWatcher:28 - Success: sendRequest_checkResponseCode_expect200(tests.PayoutTests)
