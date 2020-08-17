@@ -46,12 +46,14 @@ public class PayoutTests {
 
 
     FinancialAddress financialAddress = new FinancialAddress("MSISDN", "256780334452");
-    Payout payout1 = new Payout("1", "1", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
-            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 55));
-    Payout payout2 = new Payout("2", "1", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
-            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 55));
-    Payout payout3 = new Payout("3", "1", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
-            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 55));
+    Payout payouRequestRejected = new Payout("1", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 30));
+    Payout payoutRequestAccepted = new Payout("2", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 33));
+    Payout payoutRequestDuplicateIgnored = new Payout("2", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 33));
+    Payout payoutRequestUnknownError = new Payout("4", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 40));
 
     static Logger log = Logger.getLogger(PayoutTests.class.getName());
 
@@ -70,7 +72,7 @@ public class PayoutTests {
     @Test
     public void sendRequest_checkResponseCode_expect200() {
         given().
-                body(payout2).
+                body(payoutRequestAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts").
                 then().
@@ -81,7 +83,7 @@ public class PayoutTests {
     @Test
     public void sendRequest_checkRequestResponseBody_expectAccepted() {
         String status = given().
-                body(payout2).
+                body(payoutRequestAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts").
                 jsonPath().
@@ -91,9 +93,9 @@ public class PayoutTests {
     }
 
     @Test
-    public void sendRequest_checkRequestResponseBody_expectRejected() {
+    public void sendRequest_checkRequestResponseStatus_expectRejected() {
         String status = given().
-                body(payout1).
+                body(payouRequestRejected).
                 when().
                 post("/pawaPayBusiness/v1/payouts").
                 jsonPath().
@@ -103,9 +105,22 @@ public class PayoutTests {
     }
 
     @Test
+    public void sendRequest_checkRequestResponseReason_expectRejectionReason() {
+        String rejectionReason = given().
+                body(payouRequestRejected).
+                when().
+                post("/pawaPayBusiness/v1/payouts").
+                jsonPath().
+                get("rejectionReason.rejectionReason");
+
+        Assert.assertEquals("PAYOUTS_NOT_ALLOWED", rejectionReason);
+    }
+
+    @Test
     public void sendRequest_checkRequestResponseBody_expectDuplicateIgnored() {
+        payoutRequestDuplicateIgnored.setPayoutId("3");
         String status = given().
-                body(payout3).
+                body(payoutRequestDuplicateIgnored).
                 when().
                 post("/pawaPayBusiness/v1/payouts").
                 jsonPath().
@@ -114,6 +129,17 @@ public class PayoutTests {
         Assert.assertEquals("DUPLICATE_IGNORED", status);
     }
 
+    @Test
+    public void sendRequest_checkRequestResponse_expectUnknownInternalError() {
+        String internalError = given().
+                body(payoutRequestUnknownError).
+                when().
+                post("/pawaPayBusiness/v1/payouts").
+                jsonPath().
+                get("errorMessage");
+
+        Assert.assertEquals("Unknown Internal Error", internalError);
+    }
 
 
 
@@ -124,7 +150,7 @@ public class PayoutTests {
         verify(0, postRequestedFor(anyUrl()));
 
         given().
-                body(payout2).
+                body(payoutRequestAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts");
         latch.await(2, SECONDS);
@@ -141,7 +167,7 @@ public class PayoutTests {
         verify(0, postRequestedFor(anyUrl()));
 
         given().
-                body(payout2).
+                body(payoutRequestAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts");
         latch.await(2, SECONDS);
@@ -205,7 +231,7 @@ public class PayoutTests {
         rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
                 .withRequestBody(matchingJsonPath(
                         "$.[?(@.payoutId== '2')]"))
-                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutResponseAccepted.json"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAccepted.json"))
                 .withPostServeAction("webhook", webhook()
                         .withMethod(POST)
                         .withUrl("http://localhost:" + targetServer.port() + "/callback")
@@ -235,13 +261,19 @@ public class PayoutTests {
         rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
                 .withRequestBody(matchingJsonPath(
                         "$.[?(@.payoutId== '1')]"))
-                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutResponseRejected.json"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseRejected.json"))
         );
 
         rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
                 .withRequestBody(matchingJsonPath(
                         "$.[?(@.payoutId== '3')]"))
-                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutResponseDuplicateIgnored.json"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseDuplicateIgnored.json"))
+        );
+
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '4')]"))
+                .willReturn(aResponse().withStatus(1001).withBodyFile("json/payoutRequestUnknownError.json"))
         );
 
 
