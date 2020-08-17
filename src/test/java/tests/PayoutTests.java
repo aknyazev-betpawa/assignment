@@ -48,12 +48,22 @@ public class PayoutTests {
     FinancialAddress financialAddress = new FinancialAddress("MSISDN", "256780334452");
     Payout payouRequestRejected = new Payout("1", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
             "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 30));
-    Payout payoutRequestAccepted = new Payout("2", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+    Payout payoutRequestAcceptedCallBackAccepted = new Payout("2", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
             "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 33));
     Payout payoutRequestDuplicateIgnored = new Payout("2", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
             "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 33));
     Payout payoutRequestUnknownError = new Payout("4", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
             "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 40));
+    Payout payoutRequestAcceptedCallBackAcceptedFinalCancelled = new Payout("5", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 45));
+    Payout payoutRequestAcceptedCallBackAcceptedFinalFailed = new Payout("6", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 55));
+    Payout payoutRequestAcceptedCallBackAcceptedPending = new Payout("7", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 57));
+    Payout payoutRequestAcceptedCallBackAcceptedSubmitted = new Payout("8", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 17, 59));
+    Payout payoutUnknownError = new Payout("9", "15.21", "ZMW", financialAddress, "MTN_MOMO_ZMB", "ZMB",
+            "Payout #123", LocalDateTime.of(2000, Month.MARCH, 9, 18, 00));
 
     static Logger log = Logger.getLogger(PayoutTests.class.getName());
 
@@ -67,12 +77,10 @@ public class PayoutTests {
     }
 
 
-
-
     @Test
     public void sendRequest_checkResponseCode_expect200() {
         given().
-                body(payoutRequestAccepted).
+                body(payoutRequestAcceptedCallBackAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts").
                 then().
@@ -83,7 +91,7 @@ public class PayoutTests {
     @Test
     public void sendRequest_checkRequestResponseBody_expectAccepted() {
         String status = given().
-                body(payoutRequestAccepted).
+                body(payoutRequestAcceptedCallBackAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts").
                 jsonPath().
@@ -142,15 +150,13 @@ public class PayoutTests {
     }
 
 
-
-
     @Test
     public void sendRequest_checkCallbackHeader_expectHeader() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
         given().
-                body(payoutRequestAccepted).
+                body(payoutRequestAcceptedCallBackAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts");
         latch.await(2, SECONDS);
@@ -162,18 +168,183 @@ public class PayoutTests {
     }
 
     @Test
-    public void sendRequest_checkCallbackRequestBody_expectRequestBody() throws Exception {
+    public void sendRequestID2_checkCallbackRequestBody_expectRequestBody() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
         given().
-                body(payoutRequestAccepted).
+                body(payoutRequestAcceptedCallBackAccepted).
                 when().
                 post("/pawaPayBusiness/v1/payouts");
         latch.await(2, SECONDS);
 
         targetServer.verify(1, postRequestedFor(urlEqualTo("/callback"))
-                .withRequestBody(equalToJson("{\"created\": \"2020-02-21T17:32:29Z\"," +
+                .withRequestBody(equalToJson("{\"created\": \"2000-03-09T17:33:29Z\"," +
+                        "\"amount\": \"15.21\"," +
+                        "\"currency\": \"ZMW\"," +
+                        "\"recipient\": {" +
+                        "\"type\": \"MSISDN\"," +
+                        "\"address\": {" +
+                        "\"value\": 256780334452}}," +
+                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                        "\"country\": \"ZMB\"," +
+                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                        "\"statementDescription\": \"Payout #123\"," +
+                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                        "\"correspondentIds\": {" +
+                        "\"MTN_INIT\": \"ABC123\"," +
+                        "\"MTN_FINAL\": \"DEF456\"}," +
+                        "\"status\": \"ACCEPTED\"" +
+                        "}}"))
+        );
+    }
+
+    @Test
+    public void sendRequestID5_checkCallbackRequestBody_expectRequestBody() throws Exception {
+
+        verify(0, postRequestedFor(anyUrl()));
+
+        given().
+                body(payoutRequestAcceptedCallBackAcceptedFinalCancelled).
+                when().
+                post("/pawaPayBusiness/v1/payouts");
+        latch.await(2, SECONDS);
+
+        targetServer.verify(1, postRequestedFor(urlEqualTo("/callback"))
+                .withRequestBody(equalToJson("{\"created\": \"2000-03-09T17:45:29Z\"," +
+                        "\"amount\": \"15.21\"," +
+                        "\"currency\": \"ZMW\"," +
+                        "\"recipient\": {" +
+                        "\"type\": \"MSISDN\"," +
+                        "\"address\": {" +
+                        "\"value\": 256780334452}}," +
+                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                        "\"country\": \"ZMB\"," +
+                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                        "\"statementDescription\": \"Payout #123\"," +
+                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                        "\"correspondentIds\": {" +
+                        "\"MTN_INIT\": \"ABC123\"," +
+                        "\"MTN_FINAL\": \"DEF456\"}," +
+                        "\"status\": \"ACCEPTED\"" +
+                        "}}"))
+        );
+    }
+
+    @Test
+    public void sendRequestID6_checkCallbackRequestBody_expectRequestBody() throws Exception {
+
+        verify(0, postRequestedFor(anyUrl()));
+
+        given().
+                body(payoutRequestAcceptedCallBackAcceptedFinalFailed).
+                when().
+                post("/pawaPayBusiness/v1/payouts");
+        latch.await(2, SECONDS);
+
+        targetServer.verify(1, postRequestedFor(urlEqualTo("/callback"))
+                .withRequestBody(equalToJson("{\"created\": \"2000-03-09T17:55:29Z\"," +
+                        "\"amount\": \"15.21\"," +
+                        "\"currency\": \"ZMW\"," +
+                        "\"recipient\": {" +
+                        "\"type\": \"MSISDN\"," +
+                        "\"address\": {" +
+                        "\"value\": 256780334452}}," +
+                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                        "\"country\": \"ZMB\"," +
+                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                        "\"statementDescription\": \"Payout #123\"," +
+                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                        "\"correspondentIds\": {" +
+                        "\"MTN_INIT\": \"ABC123\"," +
+                        "\"MTN_FINAL\": \"DEF456\"}," +
+                        "\"status\": \"ACCEPTED\"" +
+                        "}}"))
+        );
+    }
+
+    @Test
+    public void sendRequestID7_checkCallbackRequestBody_expectRequestBody() throws Exception {
+
+        verify(0, postRequestedFor(anyUrl()));
+
+        given().
+                body(payoutRequestAcceptedCallBackAcceptedPending).
+                when().
+                post("/pawaPayBusiness/v1/payouts");
+        latch.await(2, SECONDS);
+
+        targetServer.verify(1, postRequestedFor(urlEqualTo("/callback"))
+                .withRequestBody(equalToJson("{\"created\": \"2000-03-09T17:57:29Z\"," +
+                        "\"amount\": \"15.21\"," +
+                        "\"currency\": \"ZMW\"," +
+                        "\"recipient\": {" +
+                        "\"type\": \"MSISDN\"," +
+                        "\"address\": {" +
+                        "\"value\": 256780334452}}," +
+                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                        "\"country\": \"ZMB\"," +
+                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                        "\"statementDescription\": \"Payout #123\"," +
+                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                        "\"correspondentIds\": {" +
+                        "\"MTN_INIT\": \"ABC123\"," +
+                        "\"MTN_FINAL\": \"DEF456\"}," +
+                        "\"status\": \"ACCEPTED\"" +
+                        "}}"))
+        );
+    }
+
+    @Test
+    public void sendRequestID8_checkCallbackRequestBody_expectRequestBody() throws Exception {
+
+        verify(0, postRequestedFor(anyUrl()));
+
+        given().
+                body(payoutRequestAcceptedCallBackAcceptedSubmitted).
+                when().
+                post("/pawaPayBusiness/v1/payouts");
+        latch.await(2, SECONDS);
+
+        targetServer.verify(1, postRequestedFor(urlEqualTo("/callback"))
+                .withRequestBody(equalToJson("{\"created\": \"2000-03-09T17:59:29Z\"," +
+                        "\"amount\": \"15.21\"," +
+                        "\"currency\": \"ZMW\"," +
+                        "\"recipient\": {" +
+                        "\"type\": \"MSISDN\"," +
+                        "\"address\": {" +
+                        "\"value\": 256780334452}}," +
+                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                        "\"country\": \"ZMB\"," +
+                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                        "\"statementDescription\": \"Payout #123\"," +
+                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                        "\"correspondentIds\": {" +
+                        "\"MTN_INIT\": \"ABC123\"," +
+                        "\"MTN_FINAL\": \"DEF456\"}," +
+                        "\"status\": \"ACCEPTED\"" +
+                        "}}"))
+        );
+    }
+
+    @Test
+    public void sendRequestID9_checkCallbackRequestBody_expectRequestBody() throws Exception {
+
+        verify(0, postRequestedFor(anyUrl()));
+
+        given().
+                body(payoutUnknownError).
+                when().
+                post("/pawaPayBusiness/v1/payouts");
+        latch.await(2, SECONDS);
+
+        targetServer.verify(1, postRequestedFor(urlEqualTo("/callback"))
+                .withRequestBody(equalToJson("{\"created\": \"2000-03-09T18:00:29Z\"," +
                         "\"amount\": \"15.21\"," +
                         "\"currency\": \"ZMW\"," +
                         "\"recipient\": {" +
@@ -196,21 +367,8 @@ public class PayoutTests {
 
 
 
-
-
-  /*  @Test
-    public void requestTransaction1_checkResponseCode_expect404() {
-        given().
-                when().
-                get("/pawaPayBusiness/v1/payouts/1").
-                then().
-                assertThat().
-                statusCode(404);
-    }
-
-
     @Test
-    public void requestTransaction2_checkResponseCode_expect200() {
+    public void requestTransactionProcessingStatusCode_checkResponseCode_expect200() {
         given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/2").
@@ -218,7 +376,73 @@ public class PayoutTests {
                 assertThat().
                 statusCode(200);
     }
-*/
+
+    @Test
+    public void requestTransactionProcessingResponse_checkResponse_expectCompleted() {
+        String status = given().
+                when().
+                get("/pawaPayBusiness/v1/payouts/2").
+                jsonPath().
+                get("status");
+
+        Assert.assertEquals("COMPLETED", status);
+    }
+
+    @Test
+    public void requestTransactionProcessingResponse_checkResponse_expectCancelled() {
+        String status = given().
+                when().
+                get("/pawaPayBusiness/v1/payouts/5").
+                jsonPath().
+                get("[0].status");
+
+        Assert.assertEquals("CANCELLED", status);
+    }
+
+    @Test
+    public void requestTransactionProcessingResponse_checkResponse_expectFailed() {
+        String status = given().
+                when().
+                get("/pawaPayBusiness/v1/payouts/6").
+                jsonPath().
+                get("[0].status");
+
+        Assert.assertEquals("FAILED", status);
+    }
+
+    @Test
+    public void requestTransactionProcessingResponse_checkResponse_expectPending() {
+        String status = given().
+                when().
+                get("/pawaPayBusiness/v1/payouts/7").
+                jsonPath().
+                get("status");
+
+        Assert.assertEquals("PENDING", status);
+    }
+
+    @Test
+    public void requestTransactionProcessingResponse_checkResponse_expectSubmitted() {
+        String status = given().
+                when().
+                get("/pawaPayBusiness/v1/payouts/8").
+                jsonPath().
+                get("status");
+
+        Assert.assertEquals("SUBMITTED", status);
+    }
+
+    @Test
+    public void requestTransactionProcessingResponse_checkResponse_expectUnknownError() {
+        String errorMessage = given().
+                when().
+                get("/pawaPayBusiness/v1/payouts/9").
+                jsonPath().
+                get("errorMessage");
+
+        Assert.assertEquals("Unknown Internal Error", errorMessage);
+    }
+
 
 
 
@@ -231,12 +455,12 @@ public class PayoutTests {
         rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
                 .withRequestBody(matchingJsonPath(
                         "$.[?(@.payoutId== '2')]"))
-                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAccepted.json"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAcceptedId2.json"))
                 .withPostServeAction("webhook", webhook()
                         .withMethod(POST)
                         .withUrl("http://localhost:" + targetServer.port() + "/callback")
                         .withHeader("Content-Type", "application/json").
-                                withBody("{\"created\": \"2020-02-21T17:32:29Z\"," +
+                                withBody("{\"created\": \"2000-03-09T17:33:29Z\"," +
                                         "\"amount\": \"15.21\"," +
                                         "\"currency\": \"ZMW\"," +
                                         "\"recipient\": {" +
@@ -256,7 +480,144 @@ public class PayoutTests {
                                         "}}"))
         );
 
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '5')]"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAcceptedId2.json"))
+                .withPostServeAction("webhook", webhook()
+                        .withMethod(POST)
+                        .withUrl("http://localhost:" + targetServer.port() + "/callback")
+                        .withHeader("Content-Type", "application/json").
+                                withBody("{\"created\": \"2000-03-09T17:45:29Z\"," +
+                                        "\"amount\": \"15.21\"," +
+                                        "\"currency\": \"ZMW\"," +
+                                        "\"recipient\": {" +
+                                        "\"type\": \"MSISDN\"," +
+                                        "\"address\": {" +
+                                        "\"value\": 256780334452}}," +
+                                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                                        "\"country\": \"ZMB\"," +
+                                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                                        "\"statementDescription\": \"Payout #123\"," +
+                                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                                        "\"correspondentIds\": {" +
+                                        "\"MTN_INIT\": \"ABC123\"," +
+                                        "\"MTN_FINAL\": \"DEF456\"}," +
+                                        "\"status\": \"ACCEPTED\"" +
+                                        "}}"))
+        );
 
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '6')]"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAcceptedId2.json"))
+                .withPostServeAction("webhook", webhook()
+                        .withMethod(POST)
+                        .withUrl("http://localhost:" + targetServer.port() + "/callback")
+                        .withHeader("Content-Type", "application/json").
+                                withBody("{\"created\": \"2000-03-09T17:55:29Z\"," +
+                                        "\"amount\": \"15.21\"," +
+                                        "\"currency\": \"ZMW\"," +
+                                        "\"recipient\": {" +
+                                        "\"type\": \"MSISDN\"," +
+                                        "\"address\": {" +
+                                        "\"value\": 256780334452}}," +
+                                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                                        "\"country\": \"ZMB\"," +
+                                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                                        "\"statementDescription\": \"Payout #123\"," +
+                                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                                        "\"correspondentIds\": {" +
+                                        "\"MTN_INIT\": \"ABC123\"," +
+                                        "\"MTN_FINAL\": \"DEF456\"}," +
+                                        "\"status\": \"ACCEPTED\"" +
+                                        "}}"))
+        );
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '7')]"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAcceptedId2.json"))
+                .withPostServeAction("webhook", webhook()
+                        .withMethod(POST)
+                        .withUrl("http://localhost:" + targetServer.port() + "/callback")
+                        .withHeader("Content-Type", "application/json").
+                                withBody("{\"created\": \"2000-03-09T17:57:29Z\"," +
+                                        "\"amount\": \"15.21\"," +
+                                        "\"currency\": \"ZMW\"," +
+                                        "\"recipient\": {" +
+                                        "\"type\": \"MSISDN\"," +
+                                        "\"address\": {" +
+                                        "\"value\": 256780334452}}," +
+                                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                                        "\"country\": \"ZMB\"," +
+                                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                                        "\"statementDescription\": \"Payout #123\"," +
+                                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                                        "\"correspondentIds\": {" +
+                                        "\"MTN_INIT\": \"ABC123\"," +
+                                        "\"MTN_FINAL\": \"DEF456\"}," +
+                                        "\"status\": \"ACCEPTED\"" +
+                                        "}}"))
+        );
+
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '8')]"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAcceptedId2.json"))
+                .withPostServeAction("webhook", webhook()
+                        .withMethod(POST)
+                        .withUrl("http://localhost:" + targetServer.port() + "/callback")
+                        .withHeader("Content-Type", "application/json").
+                                withBody("{\"created\": \"2000-03-09T17:59:29Z\"," +
+                                        "\"amount\": \"15.21\"," +
+                                        "\"currency\": \"ZMW\"," +
+                                        "\"recipient\": {" +
+                                        "\"type\": \"MSISDN\"," +
+                                        "\"address\": {" +
+                                        "\"value\": 256780334452}}," +
+                                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                                        "\"country\": \"ZMB\"," +
+                                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                                        "\"statementDescription\": \"Payout #123\"," +
+                                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                                        "\"correspondentIds\": {" +
+                                        "\"MTN_INIT\": \"ABC123\"," +
+                                        "\"MTN_FINAL\": \"DEF456\"}," +
+                                        "\"status\": \"ACCEPTED\"" +
+                                        "}}"))
+        );
+
+        rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
+                .withRequestBody(matchingJsonPath(
+                        "$.[?(@.payoutId== '9')]"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestResponseAcceptedId2.json"))
+                .withPostServeAction("webhook", webhook()
+                        .withMethod(POST)
+                        .withUrl("http://localhost:" + targetServer.port() + "/callback")
+                        .withHeader("Content-Type", "application/json").
+                                withBody("{\"created\": \"2000-03-09T18:00:29Z\"," +
+                                        "\"amount\": \"15.21\"," +
+                                        "\"currency\": \"ZMW\"," +
+                                        "\"recipient\": {" +
+                                        "\"type\": \"MSISDN\"," +
+                                        "\"address\": {" +
+                                        "\"value\": 256780334452}}," +
+                                        "\"correspondent\": \"MTN_MOMO_ZMB\"," +
+                                        "\"country\": \"ZMB\"," +
+                                        "\"payoutId\": \"f4401bd2-1568-4140-bf2d-eb77d2b2b639\"," +
+                                        "\"statementDescription\": \"Payout #123\"," +
+                                        "\"customerTimestamp\": \"2020-02-21T17:32:28Z\"," +
+                                        "\"receivedByRecipient\": \"2020-02-21T17:32:30Z\"," +
+                                        "\"correspondentIds\": {" +
+                                        "\"MTN_INIT\": \"ABC123\"," +
+                                        "\"MTN_FINAL\": \"DEF456\"}," +
+                                        "\"status\": \"ACCEPTED\"" +
+                                        "}}"))
+        );
 
         rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
                 .withRequestBody(matchingJsonPath(
@@ -273,11 +634,49 @@ public class PayoutTests {
         rule.stubFor(post(urlPathEqualTo("/pawaPayBusiness/v1/payouts"))
                 .withRequestBody(matchingJsonPath(
                         "$.[?(@.payoutId== '4')]"))
-                .willReturn(aResponse().withStatus(1001).withBodyFile("json/payoutRequestUnknownError.json"))
+                .willReturn(aResponse().withStatus(200).withBodyFile("json/payoutRequestUnknownError.json"))
         );
+
+        rule.stubFor(get(urlEqualTo("/pawaPayBusiness/v1/payouts/2"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("json/payoutFinalCompleted.json")));
+
+        rule.stubFor(get(urlEqualTo("/pawaPayBusiness/v1/payouts/5"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("json/payoutFinalCancelled.json")));
+
+        rule.stubFor(get(urlEqualTo("/pawaPayBusiness/v1/payouts/6"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("json/payoutFinalFailed.json")));
+
+        rule.stubFor(get(urlEqualTo("/pawaPayBusiness/v1/payouts/7"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("json/payoutPending.json")));
+
+        rule.stubFor(get(urlEqualTo("/pawaPayBusiness/v1/payouts/8"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("json/payoutSubmitted.json")));
+
+        rule.stubFor(get(urlEqualTo("/pawaPayBusiness/v1/payouts/9"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("json/payoutUnknownError.json")));
 
 
 
     }
+
+
 
 }
