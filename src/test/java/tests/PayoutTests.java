@@ -37,7 +37,6 @@ public class PayoutTests extends MockService {
 
     }
 
-
     @Test
     public void createRequest_checkRequestResponseCode_expect200() {
         given().
