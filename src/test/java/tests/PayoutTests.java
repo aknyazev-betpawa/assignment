@@ -35,12 +35,11 @@ public class PayoutTests extends MockService {
         log.info("Callback server port: " + targetServer.port());
         log.info("Base test server port: " + rule.port());
 
-
     }
 
 
     @Test
-    public void createRequest_checkResponseCode_expect200() {
+    public void createRequest_checkRequestResponseCode_expect200() {
         given().
                 body(payoutRequestCreationAcceptedFinalCompleted).
                 when().
@@ -51,7 +50,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void createRequest_checkRequestResponseBody_expectAccepted() {
+    public void createRequest_checkRequestResponseStatus_expectAccepted() {
         String status = given().
                 body(payoutRequestCreationAcceptedFinalCompleted).
                 when().
@@ -87,7 +86,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void createRequest_checkRequestResponseBody_expectDuplicateIgnored() {
+    public void createRequest_checkRequestResponseStatus_expectDuplicateIgnored() {
         payoutRequestCreationDuplicateIgnored.setPayoutId("3");
         String status = given().
                 body(payoutRequestCreationDuplicateIgnored).
@@ -113,7 +112,7 @@ public class PayoutTests extends MockService {
 
 
     @Test
-    public void createRequest_checkCallbackHeader_expectHeader() throws Exception {
+    public void createRequest_payoutID2_checkCallbackHeader_expectHeader() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
@@ -130,7 +129,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void createRequestPayoutID2_checkCallbackRequestBody_expectRequestBody() throws Exception {
+    public void createRequest_payoutID2_checkCallbackRequestBody_expectRequestBody() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
@@ -163,7 +162,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void createRequestPayoutID5_checkCallbackRequestBody_expectRequestBody() throws Exception {
+    public void createRequest_payoutID5_checkCallbackRequestBody_expectRequestBody() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
@@ -196,7 +195,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void createRequestPayoutID6_checkCallbackRequestBody_expectRequestBody() throws Exception {
+    public void createRequest_payoutID6_checkCallbackRequestBody_expectRequestBody() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
@@ -229,7 +228,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void createRequestPayoutID7_checkCallbackRequestBody_expectRequestBody() throws Exception {
+    public void createRequest_payoutID7_checkCallbackRequestBody_expectRequestBody() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
@@ -262,7 +261,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void createRequestPayoutID8_checkCallbackRequestBody_expectRequestBody() throws Exception {
+    public void createRequest_payoutID8_checkCallbackRequestBody_expectRequestBody() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
@@ -295,7 +294,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void sendRequestID9_checkCallbackRequestBody_expectRequestBody() throws Exception {
+    public void createRequest_payoutID9_checkCallbackRequestBody_expectRequestBody() throws Exception {
 
         verify(0, postRequestedFor(anyUrl()));
 
@@ -329,7 +328,7 @@ public class PayoutTests extends MockService {
 
 
     @Test
-    public void requestTransactionProcessingStatusCode_checkResponseCode_expect200() {
+    public void requestTransactionProcessingStatusCode_checkStatusCode_expect200() {
         given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/2").
@@ -339,7 +338,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void requestTransactionProcessingResponse_checkResponse_expectCompleted() {
+    public void requestTransactionProcessingResponse_checkResponseStatus_expectCompleted() {
         String status = given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/2").
@@ -350,7 +349,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void requestTransactionProcessingResponse_checkResponse_expectCancelled() {
+    public void requestTransactionProcessingResponse_checkResponseStatus_expectCancelled() {
         String status = given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/5").
@@ -361,7 +360,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void requestTransactionProcessingResponse_checkResponse_expectFailed() {
+    public void requestTransactionProcessingResponse_checkResponseStatus_expectFailed() {
         String status = given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/6").
@@ -372,7 +371,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void requestTransactionProcessingResponse_checkResponse_expectPending() {
+    public void requestTransactionProcessingResponse_checkResponseStatus_expectPending() {
         String status = given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/7").
@@ -383,7 +382,7 @@ public class PayoutTests extends MockService {
     }
 
     @Test
-    public void requestTransactionProcessingResponse_checkResponse_expectSubmitted() {
+    public void requestTransactionProcessingResponse_checkResponseStatus_expectSubmitted() {
         String status = given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/8").
