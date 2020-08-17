@@ -1,6 +1,6 @@
 [
   {
-    "created": "2020-02-21T17:32:29Z",
+    "created": "2000-03-09T17:55:29Z",
     "amount": "15.21",
     "currency": "ZMW",
     "recipient": {
@@ -13,8 +13,8 @@
     "country": "ZMB",
     "payoutId": "f4401bd2-1568-4140-bf2d-eb77d2b2b639",
     "statementDescription": "Payout #123",
-    "customerTimestamp": "2020-02-21T17:32:28Z",
-    "receivedByRecipient": "2020-02-21T17:32:30Z",
+    "customerTimestamp": "2000-03-09T17:55:29Z",
+    "receivedByRecipient": "2000-03-09T17:55:30Z",
     "correspondentIds": {
       "MTN_INIT": "ABC123",
       "MTN_FINAL": "DEF456"
