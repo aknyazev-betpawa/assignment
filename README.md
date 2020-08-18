@@ -1,4 +1,4 @@
-# End-to-end tests for the pawaPayBusiness REST API using REST Assured framework
+# End-to-end tests for the pawaPayBusiness API using REST Assured framework
 
 Mocking REST API using WireMock 
 
