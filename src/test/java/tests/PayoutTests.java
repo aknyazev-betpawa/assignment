@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.junit.*;
 import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
+import mappings.MockService;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -16,7 +17,7 @@ import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
-import static tests.TestUtil.*;
+import static util.TestUtil.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PayoutTests extends MockService {

@@ -1,4 +1,4 @@
-package tests;
+package mappings;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
@@ -13,7 +13,6 @@ public class MockService {
 
     @Rule
     public  WireMockRule targetServer = new WireMockRule(8090);
-
 
     @Rule
     public  WireMockRule rule = new WireMockRule(
@@ -246,7 +245,6 @@ public class MockService {
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBodyFile("json/payoutUnknownError.json")));
-
 
     }
 
