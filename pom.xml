@@ -22,6 +22,8 @@
         <mvnSite.version>3.7.1</mvnSite.version>
         <mvnReport.version>3.0.0-M5</mvnReport.version>
         <mvnSurefire.version>2.22.2</mvnSurefire.version>
+        <wiremock.version>2.21.0</wiremock.version>
+        <wiremock.webhooks.version>1.0.0</wiremock.webhooks.version>
     </properties>
     <build>
         <plugins>
@@ -30,7 +32,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mvnSurefire.version}</version>
                 <configuration>
-                    <test>TestSuite</test>
+                    <test>PayoutTests</test>
                 </configuration>
             </plugin>
             <plugin>
@@ -55,13 +57,13 @@
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
-            <version>2.21.0</version>
+            <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock-webhooks-extension</artifactId>
-            <version>1.0.0</version>
+            <version>${wiremock.webhooks.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -76,20 +78,6 @@
             <version>${junit.dataprovider.version}</version>
             <scope>test</scope>
         </dependency>
-   <!--   <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
-            <scope>test</scope>
-        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/org.apache.aries.testsupport/testsupport -->
-        <dependency>
-            <groupId>org.apache.aries.testsupport</groupId>
-            <artifactId>testsupport</artifactId>
-            <version>0.3</version>
-            <type>pom</type>
-        </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>

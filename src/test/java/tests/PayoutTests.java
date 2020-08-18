@@ -35,11 +35,10 @@ public class PayoutTests extends MockService {
         mockRemoteService();
         log.info("Callback server port: " + targetServer.port());
         log.info("Base test server port: " + rule.port());
-
     }
 
     @Test
-    public void createRequest_checkRequestResponseCode_expect200() {
+    public void createRequest_checkRequestCode_expect200() {
         given().
                 body(payoutRequestCreationAcceptedFinalCompleted).
                 when().
@@ -328,7 +327,7 @@ public class PayoutTests extends MockService {
 
 
     @Test
-    public void requestTransactionProcessingStatusCode_checkStatusCode_expect200() {
+    public void requestTransactionProcessingCode_checkCode_expect200() {
         given().
                 when().
                 get("/pawaPayBusiness/v1/payouts/2").
