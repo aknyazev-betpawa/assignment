@@ -29,4 +29,4 @@ And
 ```
 mvn surefire-report:report
 ```
-Report can be found in test-assignment\target\site\surefire-report
+Report can be found in assignment\target\site\surefire-report
